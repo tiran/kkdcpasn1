@@ -1,5 +1,7 @@
 # ASN.1 parser for KKDCP (Kerberos KDC Proxy)
 
+[![Build Status](https://travis-ci.org/tiran/kkdcpasn1.svg?branch=master)](https://travis-ci.org/tiran/kkdcpasn1)
+
 Christian Heimes <cheimes@redhat.com>
 
 

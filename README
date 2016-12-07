@@ -3,6 +3,9 @@
 ASN.1 parser for KKDCP (Kerberos KDC Proxy)
 ===========================================
 
+.. image:: https://travis-ci.org/tiran/kkdcpasn1.svg?branch=master
+    :target: https://travis-ci.org/tiran/kkdcpasn1
+
 Christian Heimes cheimes@redhat.com
 
 Parse request
@@ -42,3 +45,6 @@ Wrap response
     >>> import kkdcpasn1
     >>> wrapped = kkdcpasn1.wrap_kkdcp_response(tcp_data)
     >>> wrapped = kkdcpasn1.wrap_kkdcp_response(udp_data, add_prefix=True)
+
+.. |Build Status| image:: https://travis-ci.org/tiran/kkdcpasn1.svg?branch=master
+   :target: https://travis-ci.org/tiran/kkdcpasn1
