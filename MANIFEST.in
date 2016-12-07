@@ -1,0 +1,15 @@
+include setup.py setup.cfg
+include MANIFEST.in
+include LICENSE README
+include *.md
+include Makefile
+include tox.ini
+include tests.py
+
+include src/kkdcpasn1.pyx
+include src/kkdcpasn1.c
+
+include src/asn1/kkdcp.asn1
+include src/asn1/Makefile
+include src/asn1/*.c
+include src/asn1/*.h
