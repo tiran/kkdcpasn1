@@ -35,7 +35,7 @@ setup(
     long_description=long_description,
     keywords='asn1 kkdcp kerberos proxy',
     ext_modules=cythonize(extensions),
-    version='0.2',
+    version='0.3.dev1',
     license='MIT',
     author='Christian Heimes',
     author_email='cheimes@redhat.com',
