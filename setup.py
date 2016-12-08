@@ -31,7 +31,7 @@ with open('README') as f:
 
 setup(
     name='kkdcpasn1',
-    description='ASN.1 parser for Kerberos Proxy (KKDCP)',
+    description='High performance ASN.1 parser for Kerberos KDC Proxy [KKDCP]',
     long_description=long_description,
     keywords='asn1 kkdcp kerberos proxy',
     ext_modules=cythonize(extensions),
