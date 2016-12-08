@@ -102,6 +102,13 @@ cdef extern from "AS-REQ.h":
     cdef asn_TYPE_descriptor_t asn_DEF_AS_REQ
 
 
+cdef extern from "KRB-PRIV.h":
+    ctypedef struct KRB_PRIV_t:
+        pass
+
+    cdef asn_TYPE_descriptor_t asn_DEF_KRB_PRIV
+
+
 cdef extern from "TGS-REQ.h":
     ctypedef struct TGS_REQ_t:
         pass
@@ -196,9 +203,21 @@ cdef object decode_tgsreq(bytes inner_msg):
     return rval.code, rval.consumed, 4, 0
 
 
-cdef object decode_apreq(bytes inner_msg):
+cdef object decode_apreq_krb_priv(bytes inner_msg):
+    """kpasswd request
+
+    The request is a bit more complicated than the others
+
+    0..3: length of inner message
+    4..5: length, end of KRB-PRIV part
+    6..7: password change request version
+    8..9: AP-REQ len
+    10..apreq: AP-REQ
+    apreq..end: KRB-PRIV
+    """
     cdef asn_dec_rval_t rval
     cdef AP_REQ_t *ap_req = NULL
+    cdef KRB_PRIV_t *krb_priv = NULL
     cdef uint8_t *buf = inner_msg
     cdef size_t buflen = len(inner_msg)
     cdef uint16_t kpasswd_len, version, apreq_len
@@ -230,7 +249,6 @@ cdef object decode_apreq(bytes inner_msg):
     if apreq_len > buflen:
         raise ValueError("apreq len {} > {}".format(apreq_len, buflen))
     buf += 2
-    buflen = apreq_len
 
     # 10..apreq_len
     rval = ber_decode(
@@ -238,10 +256,27 @@ cdef object decode_apreq(bytes inner_msg):
         &asn_DEF_AP_REQ,
         <void **>&ap_req,
         <void *>buf,
-        buflen
+        apreq_len
     )
     ASN_STRUCT_FREE(asn_DEF_AP_REQ, ap_req)
-    return rval.code, rval.consumed, 10, version
+    if rval.code != RC_OK:
+        raise ValueError("Invalid AP-REQ part")
+
+    # apreq_len..buflen
+    buf += apreq_len
+    buflen -= apreq_len
+    rval = ber_decode(
+        NULL,
+        &asn_DEF_KRB_PRIV,
+        <void **>&krb_priv,
+        <void *>buf,
+        buflen
+    )
+    ASN_STRUCT_FREE(asn_DEF_KRB_PRIV, krb_priv)
+    if rval.code != RC_OK:
+        raise ValueError("Invalid KRB-PRIV part")
+
+    return rval.code, apreq_len + rval.consumed, 10, version
 
 
 cdef class KKDCPRequest(object):
@@ -291,7 +326,7 @@ cdef class KKDCPRequest(object):
 cdef list request_decoders = [
     (u'asreq', decode_asreq),
     (u'tgsreq', decode_tgsreq),
-    (u'apreq', decode_apreq),
+    (u'kpasswd', decode_apreq_krb_priv),
 ]
 
 

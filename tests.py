@@ -73,22 +73,34 @@ class KKDCPASN1Tests(unittest.TestCase):
         self.assertEqual(result.dclocator_hint, 0)
         self.assertEqual(result.request_type, expected_type)
         self.assertTrue(repr(result))
+        self.assertEqual(
+            result.offset + result.consumed,
+            len(result.request)
+        )
+        self.assertEqual(result, result)
+        self.assertFalse(result != result)
+        self.assertEqual(
+            hash(result),
+            hash(kkdcpasn1.decode_kkdcp_request(data))
+        )
         # technically not correct, just for testing
         kkdcpasn1.wrap_kkdcp_response(result.request, True)
         return result
 
     def test_asreq(self):
-        result = self.assert_decode(self.asreq1, 'asreq')
-        self.assertEqual(result.offset, 4)
-        result = self.assert_decode(self.asreq2, 'asreq')
-        self.assertEqual(result.offset, 4)
+        result1 = self.assert_decode(self.asreq1, 'asreq')
+        self.assertEqual(result1.offset, 4)
+        result2 = self.assert_decode(self.asreq2, 'asreq')
+        self.assertEqual(result2.offset, 4)
+        self.assertNotEqual(result1, result2)
+        self.assertNotEqual(hash(result1), hash(result2))
 
     def test_tgsreq(self):
         result = self.assert_decode(self.tgsreq, 'tgsreq')
         self.assertEqual(result.offset, 4)
 
     def test_kpasswdreq(self):
-        result = self.assert_decode(self.kpasswdreq, 'apreq')
+        result = self.assert_decode(self.kpasswdreq, 'kpasswd')
         self.assertEqual(result.offset, 10)
         self.assertEqual(result.version, 0x0001)
 
