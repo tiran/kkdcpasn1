@@ -38,6 +38,7 @@ cdef extern from "constr_TYPE.h":
         pass
 
     cdef void ASN_STRUCT_FREE(asn_TYPE_descriptor_t, void *)
+    cdef void ASN_STRUCT_FREE_CONTENTS_ONLY(asn_TYPE_descriptor_t, void *)
 
 
 cdef extern from "ber_decoder.h":
@@ -352,12 +353,14 @@ def wrap_kkdcp_response(bytes response_msg, add_prefix=False):
         &asn_DEF_KDC_PROXY_MESSAGE, &kkdcp_msg, NULL, NULL
     )
     if rval.encoded == -1:
+        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_KDC_PROXY_MESSAGE, &kkdcp_msg)
         raise RuntimeError("der_encode()")
 
     # malloc and encode response, allocate extra 4 bytes for length prefix
     buflen = rval.encoded
     buf = <uint8_t *>malloc(buflen)
     if buf is NULL:
+        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_KDC_PROXY_MESSAGE, &kkdcp_msg)
         raise MemoryError
 
     rval = der_encode_to_buffer(
@@ -366,6 +369,7 @@ def wrap_kkdcp_response(bytes response_msg, add_prefix=False):
         buf,
         buflen
     )
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_KDC_PROXY_MESSAGE, &kkdcp_msg)
     if rval.encoded == -1:
         free(buf)
         raise RuntimeError("der_encode_to_buffer()")
