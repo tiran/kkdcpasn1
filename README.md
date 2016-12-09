@@ -172,3 +172,34 @@ KDC-PROXY-MESSAGE ::= SEQUENCE {
 
 END
 ```
+
+## American Fuzzy Lop tests
+
+
+
+```
+                        american fuzzy lop 2.04b (aflpy)
+
+┌─ process timing ─────────────────────────────────────┬─ overall results ─────┐
+│        run time : 0 days, 11 hrs, 34 min, 21 sec     │  cycles done : 1      │
+│   last new path : 0 days, 0 hrs, 23 min, 21 sec      │  total paths : 352    │
+│ last uniq crash : none seen yet                      │ uniq crashes : 0      │
+│  last uniq hang : 0 days, 6 hrs, 39 min, 45 sec      │   uniq hangs : 1      │
+├─ cycle progress ────────────────────┬─ map coverage ─┴───────────────────────┤
+│  now processing : 170* (48.30%)     │    map density : 1507 (2.30%)          │
+│ paths timed out : 0 (0.00%)         │ count coverage : 2.07 bits/tuple       │
+├─ stage progress ────────────────────┼─ findings in depth ────────────────────┤
+│  now trying : havoc                 │ favored paths : 149 (42.33%)           │
+│ stage execs : 2030/5000 (40.60%)    │  new edges on : 202 (57.39%)           │
+│ total execs : 5.94M                 │ total crashes : 0 (0 unique)           │
+│  exec speed : 142.3/sec             │   total hangs : 2 (1 unique)           │
+├─ fuzzing strategy yields ───────────┴───────────────┬─ path geometry ────────┤
+│   bit flips : 137/275k, 20/275k, 9/275k             │    levels : 11         │
+│  byte flips : 1/34.5k, 1/18.3k, 3/18.6k             │   pending : 171        │
+│ arithmetics : 25/1.01M, 3/435k, 3/57.7k             │  pend fav : 0          │
+│  known ints : 10/92.2k, 26/476k, 55/796k            │ own finds : 348        │
+│  dictionary : 0/0, 0/0, 0/55.0k                     │  imported : n/a        │
+│       havoc : 55/2.09M, 0/0                         │  variable : 0          │
+│        trim : 9.60%/15.4k, 46.75%                   ├────────────────────────┘
+└─────────────────────────────────────────────────────┘             [cpu: 28%]
+```
