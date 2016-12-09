@@ -50,5 +50,6 @@ def check(loops=333333):
     if meminfo2.rss > meminfo.rss + 1024**2:
         raise MemoryError
 
+
 if __name__ == "__main__":
     check()
