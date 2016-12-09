@@ -13,3 +13,7 @@ include src/asn1/kkdcp.asn1
 include src/asn1/Makefile
 include src/asn1/*.c
 include src/asn1/*.h
+
+recursive-include contrib *.py *.c
+include contrib/hangs/*
+include testcases/*.der
