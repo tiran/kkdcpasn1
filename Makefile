@@ -51,6 +51,12 @@ check: clean asn1
 	$(PYTHON) setup.py build_ext -i
 	$(PYTHON) -c "import kkdcpasn1"
 
+.PHONY: memleakcheck
+memleakcheck: cleanso
+	$(PYTHON) setup.py build_ext -i -f
+	PYTHONPATH=$(CURDIR) $(PYTHON) contrib/memleak.py
+	$(MAKE) cleanso
+
 .PHONY: aflfuzz
 aflfuzz: clean
 	mkdir -p $(CURDIR)/afl-output
