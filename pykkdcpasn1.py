@@ -145,8 +145,9 @@ class Ticket(core.Sequence):
         enc-part     [3] EncryptedData
     }
     """
-    class_ = APPLICATION
-    tag = 1
+    explicit_class = APPLICATION
+    explicit_tag = 1
+    tag_type = TAG
 
     _fields = [
         ('tkt-vno', core.Integer, {'tag_type': TAG, 'tag': 0}),
@@ -287,8 +288,9 @@ class AS_REQ(KDC_REQ):
 
     AS-REQ ::= [APPLICATION 10] KDC-REQ
     """
-    class_ = APPLICATION
-    tag = 10
+    explicit_class = APPLICATION
+    explicit_tag = 10
+    tag_type = TAG
 
 
 class TGS_REQ(KDC_REQ):
@@ -296,8 +298,9 @@ class TGS_REQ(KDC_REQ):
 
     TGS-REQ ::= [APPLICATION 12] KDC-REQ
     """
-    class_ = APPLICATION
-    tag = 12
+    explicit_class = APPLICATION
+    explicit_tag = 12
+    tag_type = TAG
 
 
 class APOptions(core.BitString):
@@ -329,8 +332,10 @@ class AP_REQ(core.Sequence):
         authenticator        [4] EncryptedData
     }
     """
-    class_ = APPLICATION
-    tag = 14
+    explicit_class = APPLICATION
+    explicit_tag = 14
+    tag_type = TAG
+
     _fields = [
         ('pvno', core.Integer, {'tag_type': TAG, 'tag': 0, 'default': 5}),
         ('msg-type', core.Integer, {'tag_type': TAG, 'tag': 1, 'default': 14}),
@@ -349,8 +354,9 @@ class KRB_PRIV(core.Sequence):
         enc-part     [3] EncryptedData
     }
     """
-    class_ = APPLICATION
-    tag = 21
+    explicit_class = APPLICATION
+    explicit_tag = 21
+    tag_type = TAG
 
     _fields = [
         ('pvno', core.Integer, {'tag_type': TAG, 'tag': 0, 'default': 5}),
@@ -362,9 +368,9 @@ class KRB_PRIV(core.Sequence):
 
 class KDC_PROXY_MESSAGE(core.Sequence):
     """Kerberos Key Distribution Center (KDC) Proxy Protocol (KKDCP)
-    
+
     [MS-KKDCP], 2.2.2
-    
+
     KDC-PROXY-MESSAGE ::= SEQUENCE {
         kerb-message         [0] OCTET STRING,
         target-domain        [1] Realm OPTIONAL,
@@ -374,8 +380,7 @@ class KDC_PROXY_MESSAGE(core.Sequence):
     _fields = [
         ('kerb-message', core.OctetString, {'tag_type': TAG, 'tag': 0}),
         ('target-domain', Realm, {'tag_type': TAG, 'tag': 1, 'optional': True}),
-        ('dclocator-hint', core.Integer,
-         {'tag_type': TAG, 'tag': 2, 'optional': True}),
+        ('dclocator-hint', core.Integer, {'tag_type': TAG, 'tag': 2, 'optional': True}),
     ]
 
     @property
@@ -472,10 +477,11 @@ def decode_apreq_krb_priv(inner_msg):
     if apreq_len > buflen:
         raise ValueError("apreq len {} > {}".format(apreq_len, buflen))
     buflen -= 2
-    apreq = AP_REQ.load(inner_msg[10:10 + apreq_len], strict=STRICT)
-    apreq.native # parse children
+    apreq = AP_REQ.load(inner_msg[10:10+apreq_len], strict=STRICT)
+    # apreq.native # parse children
     krbpriv = KRB_PRIV.load(inner_msg[10 + apreq_len:], strict=STRICT)
-    krbpriv.native # parse children
+    # krbpriv.native # parse children
+    return apreq, krbpriv
 
 
 request_decoders = [
@@ -484,20 +490,32 @@ request_decoders = [
     (u'kpasswd', decode_apreq_krb_priv),
 ]
 
-if __name__ == '__main__':
+
+def test():
     from pprint import pprint
 
     with open('testcases/asreq1.der', 'rb') as f:
-        der = f.read()
+        asreq_der = f.read()
 
-    inner_msg, realm, dclocator = decode_outer(der)
-    with open('inner.asn1', 'wb') as f:
-        f.write(inner_msg[4:])
-    # 0..3, length info from MS-KKDCP (not ASN.1)
-    # 4..6, [APPLICATION 10] tag
-    # 7..end, KDC-REQ
-    req = KDC_REQ.load(inner_msg[4+3:], strict=STRICT)
-    pprint(req.native)
-    # this fails
-    req = AS_REQ.load(inner_msg[4:], strict=STRICT)
-    req.native
+    inner_msg, realm, dclocator = decode_outer(asreq_der)
+    asreq = decode_asreq(inner_msg)
+    pprint(asreq.native)
+
+    with open('testcases/tgsreq.der', 'rb') as f:
+        tgsreq_der = f.read()
+
+    inner_msg, realm, dclocator = decode_outer(tgsreq_der)
+    tgsreq = decode_tgsreq(inner_msg)
+    pprint(tgsreq.native)
+
+    with open('testcases/kpasswdreq.der', 'rb') as f:
+        kpasswd_der = f.read()
+
+    inner_msg, realm, dclocator = decode_outer(kpasswd_der)
+    apreq, krbpriv = decode_apreq_krb_priv(inner_msg)
+    pprint(krbpriv.native)
+    pprint(apreq.native)
+
+
+if __name__ == '__main__':
+    test()
